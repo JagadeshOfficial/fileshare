@@ -1,0 +1,267 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f3f4f6;
+    color: #333;
+  }
+  
+  .container {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    width: 250px;
+    background-color: #fff;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    padding: 20px 0;
+  }
+  
+  .sidebar-header {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .sidebar-header h2 {
+    color: #4f46e5;
+    font-size: 20px;
+  }
+  
+  .nav {
+    margin-top: 20px;
+  }
+  
+  .nav-link {
+    display: block;
+    padding: 10px 20px;
+    color: #444;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  
+  .nav-link:hover {
+    background-color: #e0e7ff;
+  }
+  
+  .logout {
+    color: red;
+  }
+  
+  .logout:hover {
+    background-color: #ffe4e6;
+  }
+  
+  /* Main */
+  .main {
+    flex: 1;
+    padding: 30px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .header h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .upgrade-btn {
+    padding: 10px 20px;
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .upgrade-btn:hover {
+    background-color: #4338ca;
+  }
+  
+  /* Cards */
+  .card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  /* Upload Form */
+  .upload-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+  }
+  
+  .upload-form input[type="file"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .upload-btn {
+    padding: 10px 20px;
+    background-color: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .upload-btn:hover {
+    background-color: #16a34a;
+  }
+  
+  /* Table */
+  .files-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  
+  .files-table th,
+  .files-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .files-table th {
+    background-color: #f9fafb;
+  }
+  
+  .files-table a {
+    color: #2563eb;
+    text-decoration: none;
+  }
+  
+  .files-table a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Payment Status */
+  .active-status {
+    color: green;
+    font-weight: 600;
+  }
+  
+  /* Download History */
+  #downloadHistory li {
+    margin-left: 20px;
+    margin-bottom: 5px;
+  }
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dashboard - File System</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>FileSystem</h2>
+        </div>
+        <nav class="nav">
+          <a href="#" class="nav-link">Dashboard</a>
+          <a href="#" class="nav-link">Upload Files</a>
+          <a href="#" class="nav-link">My Downloads</a>
+          <a href="#" class="nav-link">Payments</a>
+          <a href="index.html" class="nav-link logout">Logout</a>
+        </nav>
+      </aside>
+  
+      <!-- Main Content -->
+      <main class="main">
+        <!-- Header -->
+        <div class="header">
+          <div>
+            <h1>Welcome, <span id="userName">John Doe</span></h1>
+            <p>Email: <span id="userEmail">john@example.com</span></p>
+            <p>Role: <span id="userRole">Premium User</span></p>
+          </div>
+          <button class="upgrade-btn">Upgrade Plan</button>
+        </div>
+  
+        <!-- Upload Section -->
+        <div class="card">
+          <form id="uploadForm" class="upload-form">
+            <input type="file" name="file" id="fileInput" />
+            <button type="submit" class="upload-btn">Upload</button>
+          </form>
+        </div>
+  
+        <!-- Files Table -->
+        <div class="card">
+          <h2>My Uploaded Files</h2>
+          <table class="files-table">
+            <thead>
+              <tr>
+                <th>Filename</th>
+                <th>Uploaded At</th>
+                <th>Download</th>
+              </tr>
+            </thead>
+            <tbody id="filesTable">
+              <tr>
+                <td>example.pdf</td>
+                <td>2025-04-14</td>
+                <td><a href="#">Download</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+  
+        <!-- Downloads Section -->
+        <div class="card">
+          <h2>Download History</h2>
+          <ul id="downloadHistory">
+            <li>example.pdf - downloaded on 2025-04-15</li>
+          </ul>
+        </div>
+  
+        <!-- Payments -->
+        <div class="card">
+          <h2>Payment Summary</h2>
+          <div id="paymentInfo">
+            <p>Last Payment: <strong>$10.00</strong> on <strong>2025-04-10</strong></p>
+            <p>Status: <span class="active-status">Active Subscription</span></p>
+          </div>
+        </div>
+      </main>
+    </div>
+  
+    <script>
+      document.getElementById("userName").textContent = "Jane Smith";
+      document.getElementById("userEmail").textContent = "jane@example.com";
+      document.getElementById("userRole").textContent = "Premium User";
+  
+      document.getElementById("uploadForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const file = document.getElementById("fileInput").files[0];
+        if (!file) {
+          alert("Please select a file.");
+          return;
+        }
+        alert("Uploading " + file.name + "...");
+      });
+    </script>
+  </body>
+  </html>
+    

@@ -1,0 +1,9 @@
+[29-Apr-2025 04:44:03 UTC] Session user_id: 2
+[29-Apr-2025 04:44:03 UTC] Executing query: SELECT id, name FROM users ORDER BY name
+[29-Apr-2025 04:44:04 UTC] Fetched 1 users
+[29-Apr-2025 04:44:04 UTC] Session user_id: 2
+[29-Apr-2025 04:44:04 UTC] Executing query: SELECT id, file_name FROM documents ORDER BY file_name
+[29-Apr-2025 04:44:04 UTC] Fetched 0 documents
+[29-Apr-2025 04:44:15 UTC] Session user_id: 2
+[29-Apr-2025 04:44:15 UTC] Executing query: SELECT id, file_name, uploaded_at FROM documents WHERE user_id = ? ORDER BY uploaded_at DESC with user_id: 1
+[29-Apr-2025 04:44:15 UTC] Fetched 0 assigned documents for user_id: 1

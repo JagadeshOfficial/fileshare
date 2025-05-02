@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register - FileShare</title>
+  <link rel="stylesheet" href="register.css" />
+</head>
+<body>
+   <!-- Header -->
+   <header>
+    <div class="container">
+      <h1><a href="index.html" class="logo">FileSharePro</a></h1>
+      <nav>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <div class="dropdown">
+          <button class="dropbtn">Login</button>
+          <div class="dropdown-content">
+            <a href="user_login.html">User Login</a>
+            <a href="admin_login.html">Admin Login</a>
+          </div>
+        </div>
+        <a href="register.html">Sign Up</a>
+      </nav>
+    </div>
+  </header>
+  <div class="register-container">
+    <div class="register-form">
+      <h2>Create Your Account</h2>
+      <form id="registerForm" method="POST">
+        <div class="input-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+        <div class="input-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div class="input-group">
+          <label for="mobile">Mobile Number</label>
+          <input
+            type="tel"
+            id="mobile"
+            name="mobile"
+            pattern="[0-9]{10}"
+            maxlength="10"
+            required
+          />
+        </div>
+        <div class="input-group">
+          <label for="aadhaar">Aadhaar Number</label>
+          <input
+            type="text"
+            id="aadhaar"
+            name="aadhaar"
+            pattern="[0-9]{12}"
+            maxlength="12"
+            required
+          />
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+  
+        <!-- OTP Section: Initially hidden -->
+        <div class="input-group" id="otpSection" style="display: none;">
+          <label for="otp">Enter OTP</label>
+          <input type="text" id="otp" name="otp" maxlength="6" required />
+          <button type="button" id="resendOtpBtn" style="margin-top: 10px;">Resend OTP</button>
+        </div>
+  
+        <button type="button" class="register-btn" id="registerBtn">Register</button>
+        <button type="submit" class="register-btn" id="submitBtn" style="display: none;">Submit</button>
+      </form>
+  
+      <p class="login-link">
+        Already have an account?
+        <a href="login.html">Login</a>
+      </p>
+    </div>
+  </div>
+    
+
+  <script src="register.js"></script>
+  <script>
+    const registerBtn = document.getElementById("registerBtn");
+    const otpSection = document.getElementById("otpSection");
+    const submitBtn = document.getElementById("submitBtn");
+  
+    registerBtn.addEventListener("click", () => {
+      const form = document.getElementById("registerForm");
+      const formData = new FormData(form);
+  
+      fetch("register.php", {
+        method: "POST",
+        body: formData,
+      })
+        .then((res) => res.text())
+        .then((res) => {
+          if (res.trim() === "success") {
+            alert("OTP sent to your email.");
+            otpSection.style.display = "block";
+            registerBtn.style.display = "none";
+            submitBtn.style.display = "inline-block";
+          } else {
+            alert("Error: " + res);
+          }
+        });
+    });
+  
+    submitBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const otp = document.getElementById("otp").value;
+  
+      fetch("verify_otp.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "otp=" + otp,
+      })
+        .then((res) => res.text())
+        .then((res) => {
+          if (res.trim() === "success") {
+            alert("Registration successful!");
+            window.location.href = "login.html";
+          } else {
+            alert("Invalid OTP. Please try again.");
+          }
+        });
+    });
+  </script>
+  
+</body>
+</html>

@@ -1,0 +1,328 @@
+/* index.css */
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9f9;
+  }
+  /* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f9fafb; /* Tailwind: bg-gray-50 */
+  color: #1f2937; /* Tailwind: text-gray-800 */
+  margin: 0;
+}
+
+/* Header */
+header {
+  background-color: #ffffff; /* Tailwind: bg-white */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Tailwind: shadow */
+}
+
+header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4f46e5; /* Tailwind: text-indigo-600 */
+}
+
+header nav a {
+  margin-left: 1rem;
+  text-decoration: none;
+  color: #374151; /* Tailwind: text-gray-700 */
+  transition: color 0.3s;
+}
+
+header nav a:hover {
+  color: #4f46e5;
+}
+
+
+  .container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  header {
+    background: #ffffff;
+    padding: 0px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  header .logo {
+    text-decoration: none;
+    color: #333;
+    font-weight: 800;
+    font-size: 28px;
+  }
+  
+  nav a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: #555;
+    font-weight: 600;
+  }
+  
+  nav a:hover {
+    color: #000;
+  }
+ /* index.css - Clean & Enhanced Styling for Index Page Sections */
+
+
+  
+  .hero {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    color: #ffffff;
+    padding: 100px 20px;
+    text-align: center;
+  }
+  
+  .hero h2 {
+    font-size: 40px;
+    font-weight: 800;
+    margin-bottom: 20px;
+  }
+  
+  .hero p {
+    font-size: 18px;
+    max-width: 700px;
+    margin: 0 auto 30px;
+    line-height: 1.6;
+  }
+  
+  .hero a {
+    display: inline-block;
+    background: #ffffff;
+    color: #2563eb;
+    padding: 12px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.3s, color 0.3s;
+  }
+  
+  .hero a:hover {
+    background: #e0e7ff;
+    color: #1d4ed8;
+  }
+  
+  .features, .pricing {
+    padding: 80px 20px;
+    text-align: center;
+  }
+  
+  .features h3, .pricing h3 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: #1e293b;
+  }
+  
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+  }
+  
+  /* index.css */
+
+/* Features Section - Cards Hover Effect */
+.card {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  }
+  
+  /* Hover Effect */
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    background-color: #e0f7fa; /* Light blue or cyan color on hover */
+    cursor: pointer; /* Optional: change cursor to pointer to indicate interactivity */
+  }
+  
+  /* Card Heading */
+  .card h4 {
+    font-size: 22px;
+    color: #1f2937;
+    margin-bottom: 10px;
+  }
+  
+  /* Card Paragraph */
+  .card p {
+    font-size: 16px;
+    color: #4b5563;
+    line-height: 1.5;
+  }
+  
+  /* Card List */
+  .card ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    text-align: left;
+  }
+  
+  /* List Items inside Card */
+  .card ul li {
+    margin: 10px 0;
+    position: relative;
+    padding-left: 20px;
+    font-size: 15px;
+    color: #374151;
+  }
+  
+  /* List Item Before Element */
+  .card ul li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #10b981;
+    font-weight: bold;
+  }
+  
+  /* Premium Card - Border */
+  .premium {
+    border: 2px solid #2563eb;
+  }
+/* Pricing Section - Button Styling */
+.btn-outline, .btn {
+    padding: 12px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    cursor: pointer;
+  }
+  
+  /* Outline Button - "Choose Free" */
+  .btn-outline {
+    background-color: transparent;
+    color: #2563eb;
+    border: 2px solid #2563eb;
+  }
+  
+  .btn-outline:hover {
+    background-color: #2563eb;
+    color: white;
+    border-color: #2563eb;
+  }
+  
+  /* Solid Button - "Choose Premium" */
+  .btn {
+    background-color: #2563eb;
+    color: white;
+    border: 2px solid #2563eb;
+  }
+  
+  .btn:hover {
+    background-color: #1d4ed8;
+    color: white;
+    border-color: #1d4ed8;
+  }
+  
+  /* Button for the Enterprise Plan */
+  .btn-outline {
+    background-color: transparent;
+    color: #2563eb;
+    border: 2px solid #2563eb;
+  }
+  
+  .btn-outline:hover {
+    background-color: #2563eb;
+    color: white;
+    border-color: #2563eb;
+  }
+  
+  /* Hover Effects for All Buttons */
+  .btn:hover, .btn-outline:hover {
+    transform: translateY(-3px); /* Add slight hover lift effect */
+  }
+  
+  /* Responsive Button Styling for Small Screens */
+  @media (max-width: 768px) {
+    .btn-outline, .btn {
+      width: 100%; /* Make buttons full width on smaller screens */
+      padding: 14px 28px;
+      font-size: 18px; /* Increase font size on smaller screens */
+    }
+  }
+    
+  
+  footer {
+    background: #0f172a;
+    color: #f1f5f9;
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 14px;
+  }
+  
+
+
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropbtn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 26px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 5px;
+  }
+
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+
+  .dropdown-content a:hover {
+    background-color: #f1f1f1;
+  }
+
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+
+  .dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+  }

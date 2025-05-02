@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register - FileShare</title>
+  <link rel="stylesheet" href="register.css" />
+</head>
+
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <h1><a href="index.html" class="logo">FileSharePro</a></h1>
+      <nav>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <div class="dropdown">
+          <button class="dropbtn">Login</button>
+          <div class="dropdown-content">
+            <a href="user_login.html">User Login</a>
+            <a href="admin_login.html">Admin Login</a>
+          </div>
+        </div>
+        <a href="register.html">Sign Up</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Register Form -->
+  <div class="register-container">
+    <div class="register-form">
+      <h2>Create Your Account</h2>
+      <form id="registerForm" method="POST" action="admin_register.php">
+        <div class="input-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+        <div class="input-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div class="input-group">
+          <label for="mobile">Mobile Number</label>
+          <input type="tel" id="mobile" name="mobile" pattern="[0-9]{10}" maxlength="10" required />
+        </div>
+        <div class="input-group">
+          <label for="aadhaar">Aadhaar Number</label>
+          <input type="text" id="aadhaar" name="aadhaar" pattern="[0-9]{12}" maxlength="12" required />
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+        <button type="submit" class="register-btn">Register</button>
+      </form>
+
+      <p class="login-link">
+        Already have an account? <a href="admin_login.html">Login</a>
+      </p>
+    </div>
+  </div>
+</body>
+
+</html>
