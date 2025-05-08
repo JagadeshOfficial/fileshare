@@ -234,7 +234,7 @@ $conn->close();
     $conn->close();
     ?>
 
-    <!-- Profile Section -->
+    <!-- Profile Section (containing the Edit Profile button) -->
     <div id="Profile" class="section profile-section">
       <h2 class="section-title">Admin Profile</h2>
       <div class="profile-card">
@@ -251,7 +251,8 @@ $conn->close();
             <p><strong>Mobile:</strong> <span id="mobile"><?php echo htmlspecialchars($user['mobile']); ?></span></p>
             <p><strong>Aadhaar:</strong> <span id="aadhaar"><?php echo htmlspecialchars($user['aadhaar']); ?></span></p>
           </div>
-          <button class="edit-profile-btn" onclick="openEditAdminForm(<?php echo $user_id; ?>)">Edit Profile</button>
+          <button class="edit-profile-btn" onclick="openEditAdminForm(<?php echo htmlspecialchars($user_id); ?>)">Edit
+            Profile</button>
         </div>
       </div>
     </div>
@@ -259,7 +260,7 @@ $conn->close();
     <!-- Edit Admin Modal -->
     <div id="editAdminModal" class="modal">
       <div class="modal-content">
-        <span class="close" onclick="closeEditAdminForm()">&times;</span>
+        <span class="close" onclick="closeEditAdminForm()">×</span>
         <h2>Edit Admin</h2>
         <form id="editAdminForm" enctype="multipart/form-data">
           <input type="hidden" id="editAdminIndex" name="editAdminIndex">
@@ -289,6 +290,74 @@ $conn->close();
         </form>
       </div>
     </div>
+
+    <script>
+      // Edit Admin Modal Functions
+      function openEditAdminForm(adminId) {
+        console.log('Opening edit form for admin ID:', adminId);
+        const modal = document.getElementById('editAdminModal');
+
+        if (!modal) {
+          console.error('Edit modal element not found in DOM');
+          showNotification('Error: Edit modal not found in the DOM', 'error');
+          return;
+        }
+
+        fetch(`get_admin.php?id=${adminId}`)
+          .then(response => {
+            console.log('Fetch response status:', response.status);
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+          })
+          .then(text => {
+            console.log('Get Admin Response:', text);
+            try {
+              const admin = JSON.parse(text);
+              if (admin && admin.id) {
+                console.log('Admin data loaded:', admin);
+                document.getElementById('editAdminIndex').value = admin.id || '';
+                document.getElementById('editAdminName').value = admin.name || '';
+                document.getElementById('editAdminEmail').value = admin.email || '';
+                document.getElementById('editAdminMobile').value = admin.mobile || '';
+                document.getElementById('editAdminAadhar').value = admin.aadhaar || '';
+                const profilePreview = document.getElementById('editAdminProfilePreview');
+                if (profilePreview) {
+                  profilePreview.src = admin.profile_picture || 'https://via.placeholder.com/120';
+                }
+                modal.style.display = 'block';
+                console.log('Modal display set to block');
+              } else {
+                console.log('Admin data not found in response');
+                showNotification('Admin not found.', 'error');
+              }
+            } catch (e) {
+              console.error('Invalid JSON from get_admin.php:', text);
+              showNotification('Error: Invalid response from get_admin.php. Check console for details.', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Fetch error for get_admin.php:', error);
+            showNotification('Error: ' + error.message, 'error');
+          });
+      }
+
+      function closeEditAdminForm() {
+        const modal = document.getElementById('editAdminModal');
+        if (modal) {
+          modal.style.display = 'none';
+          console.log('Modal closed');
+        } else {
+          console.error('Edit modal element not found when trying to close');
+        }
+      }
+
+      // Notification function (required for error handling)
+      function showNotification(message, type) {
+        alert(`${type.charAt(0).toUpperCase() + type.slice(1)}: ${message}`);
+      }
+    </script>
 
     <!-- Document Attach Section -->
     <div id="document-attach" class="section document-attach-section">
@@ -341,18 +410,22 @@ $conn->close();
     </div>
 
   </div>
+
   <script>
+    // Combined DOMContentLoaded listener for all sections
     document.addEventListener('DOMContentLoaded', () => {
+      // Document Attach Section
       const userSelect = document.getElementById('userSelect');
       const documentSelect = document.getElementById('documentSelect');
       const documentForm = document.getElementById('documentForm');
       const documentList = document.getElementById('userDocumentList');
-      // Removed notification div reference since we’re using alert()
+      let currentUserId = null; // Track the currently selected userId
 
       // Fetch users
       fetch('api.php?action=get_users')
         .then(response => response.json())
         .then(users => {
+          console.log('Fetched users:', users);
           users.forEach(user => {
             const option = document.createElement('option');
             option.value = user.id;
@@ -368,6 +441,7 @@ $conn->close();
       fetch('api.php?action=get_documents')
         .then(response => response.json())
         .then(documents => {
+          console.log('Fetched documents:', documents);
           documents.forEach(doc => {
             const option = document.createElement('option');
             option.value = doc.id;
@@ -395,30 +469,29 @@ $conn->close();
           const response = await fetch('api.php?action=assign_documents', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, documentIds })
+            body: JSON.stringify({ userId: parseInt(userId), documentIds })
           });
 
           const result = await response.json();
+          console.log('Assign API Response:', result);
           if (response.ok) {
             showNotification(result.message, 'success');
-            loadAssignedDocuments();
+            loadAssignedDocuments(userId);
             documentForm.reset();
           } else {
-            showNotification(result.error, 'error');
+            showNotification(result.error || 'Failed to assign documents', 'error');
           }
         } catch (error) {
-          showNotification('Error assigning documents: ' + error, 'error');
+          console.error('Assign Fetch Error:', error);
+          showNotification('Error assigning documents: ' + error.message, 'error');
         }
       });
 
       // Load assigned documents when user is selected
       userSelect.addEventListener('change', () => {
-        const userId = userSelect.value;
-        if (userId) {
-          loadAssignedDocuments(userId);
-        } else {
-          loadAssignedDocuments();
-        }
+        currentUserId = userSelect.value || null;
+        console.log('Selected userId:', currentUserId);
+        loadAssignedDocuments(currentUserId);
       });
 
       // Load assigned documents
@@ -428,7 +501,11 @@ $conn->close();
             ? `api.php?action=get_assigned_documents&userId=${userId}`
             : 'api.php?action=get_all_assigned_documents';
           const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
           const documents = await response.json();
+          console.log('Assigned documents:', documents);
 
           const documentsByUser = documents.reduce((acc, doc) => {
             if (!acc[doc.user_id]) {
@@ -470,6 +547,7 @@ $conn->close();
             documentList.appendChild(userItem);
           });
 
+          // Toggle document visibility
           document.querySelectorAll('.user-toggle').forEach(button => {
             button.addEventListener('click', () => {
               const docsDiv = button.nextElementSibling;
@@ -478,9 +556,11 @@ $conn->close();
             });
           });
 
+          // Handle delete button clicks
           document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', async () => {
-              const docId = button.dataset.docId;
+              const docId = parseInt(button.dataset.docId);
+              console.log('Deleting document with ID:', docId);
               if (confirm('Are you sure you want to delete this document assignment?')) {
                 try {
                   const response = await fetch('api.php?action=delete_document', {
@@ -488,20 +568,24 @@ $conn->close();
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ docId })
                   });
+
                   const result = await response.json();
+                  console.log('Delete API Response:', result);
                   if (response.ok) {
                     showNotification(result.message, 'success');
-                    loadAssignedDocuments(userId);
+                    loadAssignedDocuments(currentUserId);
                   } else {
-                    showNotification(result.error, 'error');
+                    showNotification(result.error || 'Failed to delete document', 'error');
                   }
                 } catch (error) {
-                  showNotification('Error deleting document: ' + error, 'error');
+                  console.error('Delete Fetch Error:', error);
+                  showNotification('Error deleting document: ' + error.message, 'error');
                 }
               }
             });
           });
         } catch (error) {
+          console.error('Load Documents Error:', error);
           showNotification('Error loading assigned documents: ' + error, 'error');
         }
       }
@@ -513,334 +597,316 @@ $conn->close();
 
       // Initial load of all assigned documents
       loadAssignedDocuments();
-    });
-  </script>
 
-
-  <script>
-    function openEditAdminForm(adminId) {
-      fetch(`get_admin.php?id=${adminId}`)
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.text();
-        })
-        .then(text => {
-          console.log('Get Admin Response:', text);
-          try {
-            const admin = JSON.parse(text);
-            if (admin && admin.id) {
-              document.getElementById('editAdminIndex').value = admin.id;
-              document.getElementById('editAdminName').value = admin.name;
-              document.getElementById('editAdminEmail').value = admin.email;
-              document.getElementById('editAdminMobile').value = admin.mobile;
-              document.getElementById('editAdminAadhar').value = admin.aadhaar;
-              // Display current profile picture (if any)
-              const profilePreview = document.getElementById('editAdminProfilePreview');
-              if (profilePreview) {
-                profilePreview.src = admin.profile_picture || 'https://via.placeholder.com/120';
-              }
-              document.getElementById('editAdminModal').style.display = 'block';
-            } else {
-              alert('Admin not found.');
-            }
-          } catch (e) {
-            console.error('Invalid JSON from get_admin.php:', text);
-            alert('Error: Invalid response from get_admin.php. Check console for details.');
-          }
-        })
-        .catch(error => {
-          console.error('Fetch error for get_admin.php:', error);
-          alert('Error: ' + error.message);
+      // Section Navigation
+      document.querySelectorAll('.sidebar-menu a[data-section]').forEach(link => {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+          this.classList.add('active');
+          document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+          const sectionId = this.getAttribute('data-section');
+          document.getElementById(sectionId).classList.add('active');
         });
-    }
-  </script>
-  <script>
-    // Section Navigation
-    document.querySelectorAll('.sidebar-menu a[data-section]').forEach(link => {
-      link.addEventListener('click', function (e) {
-        e.preventDefault();
-        document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
-        this.classList.add('active');
-        document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-        const sectionId = this.getAttribute('data-section');
-        document.getElementById(sectionId).classList.add('active');
       });
-    });
 
-    // Show Section
-    function showSection(sectionId) {
-      document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-      const targetSection = document.getElementById(sectionId);
-      if (targetSection) {
-        targetSection.classList.add('active');
+      // Show Section
+      function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+          targetSection.classList.add('active');
+        }
       }
-    }
 
-    // Add Admin Modal
-    function openAddAdminForm() {
-      document.getElementById('add-admin-modal').style.display = 'block';
-    }
+      // Add Admin Modal
+      function openAddAdminForm() {
+        document.getElementById('add-admin-modal').style.display = 'block';
+      }
 
-    function closeAddAdminForm() {
-      document.getElementById('add-admin-modal').style.display = 'none';
-    }
+      function closeAddAdminForm() {
+        document.getElementById('add-admin-modal').style.display = 'none';
+      }
 
-    document.getElementById('add-admin-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      fetch('add_admin.php', {
-        method: 'POST',
-        body: formData
-      })
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.text();
-        })
-        .then(text => {
-          console.log('Add Admin Response:', text);
-          try {
-            const data = JSON.parse(text);
-            alert(data.message || 'Admin added successfully');
-            if (data.status === 'success') {
-              closeAddAdminForm();
-              location.reload();
-            }
-          } catch (e) {
-            console.error('Invalid JSON from add_admin.php:', text);
-            alert('Error: Invalid response from add_admin.php. Check console for details.');
-          }
-        })
-        .catch(error => {
-          console.error('Fetch error for add_admin.php:', error);
-          alert('Error: ' + error.message);
-        });
-    });
-
-    // Edit Admin Modal
-    function openEditAdminForm(adminId) {
-      fetch(`get_admin.php?id=${adminId}`)
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.text();
-        })
-        .then(text => {
-          console.log('Get Admin Response:', text);
-          try {
-            const admin = JSON.parse(text);
-            if (admin && admin.id) {
-              document.getElementById('editAdminIndex').value = admin.id;
-              document.getElementById('editAdminName').value = admin.name;
-              document.getElementById('editAdminEmail').value = admin.email;
-              document.getElementById('editAdminMobile').value = admin.mobile;
-              document.getElementById('editAdminAadhar').value = admin.aadhaar;
-              document.getElementById('editAdminModal').style.display = 'block';
-            } else {
-              alert('Admin not found.');
-            }
-          } catch (e) {
-            console.error('Invalid JSON from get_admin.php:', text);
-            alert('Error: Invalid response from get_admin.php. Check console for details.');
-          }
-        })
-        .catch(error => {
-          console.error('Fetch error for get_admin.php:', error);
-          alert('Error: ' + error.message);
-        });
-    }
-
-    function closeEditAdminForm() {
-      document.getElementById('editAdminModal').style.display = 'none';
-    }
-
-    document.getElementById('editAdminForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      fetch('update_admin.php', {
-        method: 'POST',
-        body: formData
-      })
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.text();
-        })
-        .then(text => {
-          console.log('Update Admin Response:', text);
-          try {
-            const data = JSON.parse(text);
-            alert(data.message || 'Admin updated successfully');
-            if (data.status === 'success') {
-              closeEditAdminForm();
-              location.reload();
-            }
-          } catch (e) {
-            console.error('Invalid JSON from update_admin.php:', text);
-            alert('Error: Invalid response from update_admin.php. Check console for details.');
-          }
-        })
-        .catch(error => {
-          console.error('Fetch error for update_admin.php:', error);
-          alert('Error: ' + error.message);
-        });
-    });
-
-    // Delete Admin
-    function deleteAdmin(adminId) {
-      if (confirm('Are you sure you want to delete this admin?')) {
-        fetch('delete_admin.php', {
+      document.getElementById('add-admin-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('add_admin.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'id=' + adminId
+          body: formData
         })
           .then(response => {
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
             return response.text();
           })
           .then(text => {
-            console.log('Delete Admin Response:', text);
+            console.log('Add Admin Response:', text);
             try {
               const data = JSON.parse(text);
-              alert(data.message || 'Admin deleted successfully');
+              showNotification(data.message || 'Admin added successfully', data.status);
               if (data.status === 'success') {
+                closeAddAdminForm();
                 location.reload();
               }
             } catch (e) {
-              console.error('Invalid JSON from delete_admin.php:', text);
-              alert('Error: Invalid response from delete_admin.php. Check console for details.');
+              console.error('Invalid JSON from add_admin.php:', text);
+              showNotification('Error: Invalid response from add_admin.php. Check console for details.', 'error');
             }
           })
           .catch(error => {
-            console.error('Fetch error for delete_admin.php:', error);
-            alert('Error: ' + error.message);
+            console.error('Fetch error for add_admin.php:', error);
+            showNotification('Error: ' + error.message, 'error');
+          });
+      });
+
+      // Edit Admin Modal
+      function openEditAdminForm(adminId) {
+        console.log('Opening edit form for admin ID:', adminId); // Debug log
+        fetch(`get_admin.php?id=${adminId}`)
+          .then(response => {
+            console.log('Fetch response status:', response.status); // Debug log
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            return response.text();
+          })
+          .then(text => {
+            console.log('Get Admin Response:', text);
+            try {
+              const admin = JSON.parse(text);
+              if (admin && admin.id) {
+                console.log('Admin data loaded:', admin); // Debug log
+                document.getElementById('editAdminIndex').value = admin.id;
+                document.getElementById('editAdminName').value = admin.name || '';
+                document.getElementById('editAdminEmail').value = admin.email || '';
+                document.getElementById('editAdminMobile').value = admin.mobile || '';
+                document.getElementById('editAdminAadhar').value = admin.aadhaar || '';
+                // Display current profile picture (if any)
+                const profilePreview = document.getElementById('editAdminProfilePreview');
+                if (profilePreview) {
+                  profilePreview.src = admin.profile_picture || 'https://via.placeholder.com/120';
+                }
+                const modal = document.getElementById('editAdminModal');
+                if (modal) {
+                  modal.style.display = 'block';
+                  console.log('Modal should now be visible'); // Debug log
+                } else {
+                  console.error('Modal element not found');
+                  showNotification('Error: Edit modal not found in the DOM', 'error');
+                }
+              } else {
+                console.log('Admin data not found in response');
+                showNotification('Admin not found.', 'error');
+              }
+            } catch (e) {
+              console.error('Invalid JSON from get_admin.php:', text);
+              showNotification('Error: Invalid response from get_admin.php. Check console for details.', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Fetch error for get_admin.php:', error);
+            showNotification('Error: ' + error.message, 'error');
           });
       }
-    }
 
-    // File Management
-    document.getElementById('uploadForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      fetch('upload.php', {
-        method: 'POST',
-        body: formData
-      })
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.text();
-        })
-        .then(text => {
-          console.log('Upload File Response:', text);
-          try {
-            const data = JSON.parse(text);
-            alert(data.message || 'File uploaded successfully');
-            if (data.status === 'success') {
-              fetchFiles();
-            }
-          } catch (e) {
-            console.error('Invalid JSON from upload.php:', text);
-            alert('Error: Invalid response from upload.php. Check console for details.');
-          }
-        })
-        .catch(error => {
-          console.error('Fetch error for upload.php:', error);
-          alert('Error: ' + error.message);
-        });
-    });
+      function closeEditAdminForm() {
+        const modal = document.getElementById('editAdminModal');
+        if (modal) {
+          modal.style.display = 'none';
+        }
+      }
 
-    function fetchFiles() {
-      fetch('fetch_files.php')
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          return response.text();
-        })
-        .then(text => {
-          console.log('Fetch Files Response:', text);
-          try {
-            const data = JSON.parse(text);
-            const fileGrid = document.getElementById('fileGrid');
-            fileGrid.innerHTML = '';
-            if (data.status === 'success') {
-              data.files.forEach(file => {
-                const fileCard = document.createElement('div');
-                fileCard.classList.add('file-card');
-                fileCard.innerHTML = `
-                            <div class="file-card-content">
-                                <h4>${file.file_name}</h4>
-                                <p>Size: ${file.file_size}</p>
-                                <p>Type: ${file.file_type}</p>
-                                <a href="Uploads/${file.file_name}" target="_blank" class="download-btn">
-                                    <i class="fas fa-download"></i>
-                                </a>
-                                <button class="delete-btn" data-id="${file.id}">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        `;
-                fileGrid.appendChild(fileCard);
-              });
-              document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', function () {
-                  const fileId = this.getAttribute('data-id');
-                  deleteFile(fileId);
-                });
-              });
-            } else {
-              fileGrid.innerHTML = '<p>No files found.</p>';
-            }
-          } catch (e) {
-            console.error('Invalid JSON from fetch_files.php:', text);
-            alert('Error: Invalid response from fetch_files.php. Check console for details.');
-          }
-        })
-        .catch(error => {
-          console.error('Fetch error for fetch_files.php:', error);
-          document.getElementById('fileGrid').innerHTML = '<p>Error loading files.</p>';
-        });
-    }
-
-    function deleteFile(fileId) {
-      if (confirm('Are you sure you want to delete this file?')) {
-        fetch('delete_file.php', {
+      document.getElementById('editAdminForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('update_admin.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: fileId })
+          body: formData
         })
           .then(response => {
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
             return response.text();
           })
           .then(text => {
-            console.log('Delete File Response:', text);
+            console.log('Update Admin Response:', text);
             try {
               const data = JSON.parse(text);
-              alert(data.message || 'File deleted successfully');
+              showNotification(data.message || 'Admin updated successfully', data.status);
+              if (data.status === 'success') {
+                closeEditAdminForm();
+                location.reload();
+              }
+            } catch (e) {
+              console.error('Invalid JSON from update_admin.php:', text);
+              showNotification('Error: Invalid response from update_admin.php. Check console for details.', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Fetch error for update_admin.php:', error);
+            showNotification('Error: ' + error.message, 'error');
+          });
+      });
+
+      // Delete Admin
+      function deleteAdmin(adminId) {
+        if (confirm('Are you sure you want to delete this admin?')) {
+          fetch('delete_admin.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'id=' + adminId
+          })
+            .then(response => {
+              if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+              return response.text();
+            })
+            .then(text => {
+              console.log('Delete Admin Response:', text);
+              try {
+                const data = JSON.parse(text);
+                showNotification(data.message || 'Admin deleted successfully', data.status);
+                if (data.status === 'success') {
+                  location.reload();
+                }
+              } catch (e) {
+                console.error('Invalid JSON from delete_admin.php:', text);
+                showNotification('Error: Invalid response from delete_admin.php. Check console for details.', 'error');
+              }
+            })
+            .catch(error => {
+              console.error('Fetch error for delete_admin.php:', error);
+              showNotification('Error: ' + error.message, 'error');
+            });
+        }
+      }
+
+      // File Management
+      document.getElementById('uploadForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('upload.php', {
+          method: 'POST',
+          body: formData
+        })
+          .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            return response.text();
+          })
+          .then(text => {
+            console.log('Upload File Response:', text);
+            try {
+              const data = JSON.parse(text);
+              showNotification(data.message || 'File uploaded successfully', data.status);
               if (data.status === 'success') {
                 fetchFiles();
               }
             } catch (e) {
-              console.error('Invalid JSON from delete_file.php:', text);
-              alert('Error: Invalid response from delete_file.php. Check console for details.');
+              console.error('Invalid JSON from upload.php:', text);
+              showNotification('Error: Invalid response from upload.php. Check console for details.', 'error');
             }
           })
           .catch(error => {
-            console.error('Fetch error for delete_file.php:', error);
-            alert('Error: ' + error.message);
+            console.error('Fetch error for upload.php:', error);
+            showNotification('Error: ' + error.message, 'error');
+          });
+      });
+
+      function fetchFiles() {
+        fetch('fetch_files.php')
+          .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            return response.text();
+          })
+          .then(text => {
+            console.log('Fetch Files Response:', text);
+            try {
+              const data = JSON.parse(text);
+              const fileGrid = document.getElementById('fileGrid');
+              fileGrid.innerHTML = '';
+              if (data.status === 'success') {
+                console.log('Files to display:', data.files); // Debug log
+                if (data.files.length === 0) {
+                  fileGrid.innerHTML = '<p>No files found.</p>';
+                  return;
+                }
+                data.files.forEach(file => {
+                  const fileCard = document.createElement('div');
+                  fileCard.classList.add('file-card');
+                  fileCard.innerHTML = `
+                                <div class="file-card-content">
+                                    <h4>${file.file_name}</h4>
+                                    <p>Size: ${file.file_size}</p>
+                                    <p>Type: ${file.file_type}</p>
+                                    <a href="Uploads/${file.file_name}" target="_blank" class="download-btn">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <button class="delete-btn" data-id="${file.id}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            `;
+                  fileGrid.appendChild(fileCard);
+                });
+                document.querySelectorAll('.delete-btn').forEach(button => {
+                  button.addEventListener('click', function () {
+                    const fileId = this.getAttribute('data-id');
+                    deleteFile(fileId);
+                  });
+                });
+              } else {
+                fileGrid.innerHTML = '<p>No files found.</p>';
+              }
+            } catch (e) {
+              console.error('Invalid JSON from fetch_files.php:', text);
+              showNotification('Error: Invalid response from fetch_files.php. Check console for details.', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Fetch error for fetch_files.php:', error);
+            document.getElementById('fileGrid').innerHTML = '<p>Error loading files.</p>';
           });
       }
-    }
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function () {
+      function deleteFile(fileId) {
+        if (confirm('Are you sure you want to delete this file?')) {
+          fetch('remove_file.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: fileId })
+          })
+            .then(response => {
+              if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+              return response.text();
+            })
+            .then(text => {
+              console.log('Delete File Response:', text);
+              try {
+                const data = JSON.parse(text);
+                showNotification(data.message || 'File deleted successfully', data.status);
+                if (data.status === 'success') {
+                  fetchFiles();
+                }
+              } catch (e) {
+                console.error('Invalid JSON from remove_file.php:', text);
+                showNotification('Error: Invalid response from remove_file.php. Check console for details.', 'error');
+              }
+            })
+            .catch(error => {
+              console.error('Fetch error for remove_file.php:', error);
+              showNotification('Error: ' + error.message, 'error');
+            });
+        }
+      }
+
+      // Initialize File Management and Section Navigation
       fetchFiles();
       document.querySelector('.sidebar-menu a[data-section="dashboard"]').classList.add('active');
-    });
 
-    // Modal Close on Outside Click
-    window.onclick = function (event) {
-      const addModal = document.getElementById('add-admin-modal');
-      const editModal = document.getElementById('editAdminModal');
-      if (event.target === addModal) closeAddAdminForm();
-      if (event.target === editModal) closeEditAdminForm();
-    };
+      // Modal Close on Outside Click
+      window.onclick = function (event) {
+        const addModal = document.getElementById('add-admin-modal');
+        const editModal = document.getElementById('editAdminModal');
+        if (event.target === addModal) closeAddAdminForm();
+        if (event.target === editModal) closeEditAdminForm();
+      };
+    });
   </script>
 </body>
 

@@ -1,21 +1,34 @@
 <?php
-ob_start();
-include('db.php');
+session_start();
+include('db.php'); // Include your database connection
+
 header('Content-Type: application/json');
 
-if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-    $stmt = $conn->prepare("SELECT id, name, email, mobile, aadhaar, profile_picture FROM admins WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $admin = $result->fetch_assoc();
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized access']);
+    exit;
+}
 
-    ob_end_clean();
-    echo json_encode($admin ?: []);
+// Check if the id parameter is provided
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid admin ID']);
+    exit;
+}
+
+$adminId = (int)$_GET['id'];
+
+// Fetch admin details
+$stmt = $conn->prepare("SELECT id, name, email, mobile, aadhaar, profile_picture FROM admins WHERE id = ?");
+$stmt->bind_param("i", $adminId);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $admin = $result->fetch_assoc();
+    echo json_encode($admin);
 } else {
-    ob_end_clean();
-    echo json_encode(['status' => 'error', 'message' => 'No admin ID provided']);
+    echo json_encode(['status' => 'error', 'message' => 'Admin not found']);
 }
 
 $stmt->close();

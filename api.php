@@ -1,8 +1,7 @@
-
 <?php
 session_start();
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: *'); // Restrict to your domain in production
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
@@ -19,7 +18,8 @@ if ($conn->connect_error) {
 }
 
 // Log user activity
-function logActivity($conn, $userId, $action, $fileName) {
+function logActivity($conn, $userId, $action, $fileName)
+{
     $stmt = $conn->prepare('INSERT INTO user_activities (user_id, action, file_name, created_at) VALUES (?, ?, ?, NOW())');
     $stmt->bind_param('iss', $userId, $action, $fileName);
     $stmt->execute();
@@ -58,6 +58,7 @@ switch ($action) {
             $documentIds = isset($data['documentIds']) ? $data['documentIds'] : [];
             $adminId = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
 
+            // Debug logging
             error_log("Assign Documents: userId=$userId, adminId=$adminId, documentIds=" . json_encode($documentIds));
             error_log('Session data: ' . print_r($_SESSION, true));
 
@@ -77,6 +78,7 @@ switch ($action) {
                 break;
             }
 
+            // Validate admin
             $stmt = $conn->prepare('SELECT id FROM admins WHERE id = ?');
             $stmt->bind_param('i', $adminId);
             $stmt->execute();
@@ -88,6 +90,7 @@ switch ($action) {
             }
             $stmt->close();
 
+            // Validate user
             $stmt = $conn->prepare('SELECT id FROM users WHERE id = ?');
             $stmt->bind_param('i', $userId);
             $stmt->execute();
@@ -99,35 +102,60 @@ switch ($action) {
             }
             $stmt->close();
 
+            // Validate document IDs
+            foreach ($documentIds as $docId) {
+                $docId = intval($docId);
+                $stmt = $conn->prepare('SELECT id FROM files WHERE id = ?');
+                $stmt->bind_param('i', $docId);
+                $stmt->execute();
+                if ($stmt->get_result()->num_rows === 0) {
+                    echo json_encode(['error' => "Invalid document ID: $docId"]);
+                    http_response_code(400);
+                    $stmt->close();
+                    break 2;
+                }
+                $stmt->close();
+            }
+
             $conn->begin_transaction();
+            $stmt = null;
             try {
+                // Insert without file_path (assuming file_path is nullable)
                 $stmt = $conn->prepare("
-                    INSERT INTO documents (file_name, file_path, admin_id, user_id, uploaded_at)
-                    SELECT f.file_name, f.file_path, ?, ?, NOW()
+                    INSERT INTO documents (file_name, admin_id, user_id, uploaded_at)
+                    SELECT f.file_name, ?, ?, NOW()
                     FROM files f
                     WHERE f.id = ?
                 ");
+
+                if (!$stmt) {
+                    throw new Exception('Failed to prepare statement: ' . $conn->error);
+                }
 
                 foreach ($documentIds as $docId) {
                     $docId = intval($docId);
                     $stmt->bind_param('iii', $adminId, $userId, $docId);
                     if (!$stmt->execute()) {
-                        throw new Exception('Failed to assign document ID: ' . $docId);
+                        throw new Exception('Failed to assign document ID ' . $docId . ': ' . $stmt->error);
                     }
                 }
 
+                $stmt->close();
                 $conn->commit();
                 echo json_encode(['message' => 'Documents assigned successfully']);
             } catch (Exception $e) {
                 $conn->rollback();
+                if ($stmt && !$stmt->error) {
+                    $stmt->close();
+                }
+                error_log('Assign Documents Error: ' . $e->getMessage());
                 echo json_encode(['error' => 'Failed to assign documents: ' . $e->getMessage()]);
                 http_response_code(500);
             }
-            $stmt->close();
         }
         break;
 
-    // Get assigned documents for a user (accessible by user or admin)
+    // Get assigned documents for a user
     case 'get_assigned_documents':
         $userId = isset($_GET['userId']) ? intval($_GET['userId']) : 0;
         if ($userId <= 0) {
@@ -137,7 +165,7 @@ switch ($action) {
         }
 
         $stmt = $conn->prepare("
-            SELECT d.id, d.file_name, d.file_path, d.uploaded_at, u.id as user_id, u.name as user_name, a.name as admin_name
+            SELECT d.id, d.file_name, d.uploaded_at, u.id as user_id, u.name as user_name, a.name as admin_name
             FROM documents d
             JOIN users u ON d.user_id = u.id
             JOIN admins a ON d.admin_id = a.id
@@ -146,12 +174,12 @@ switch ($action) {
         $stmt->bind_param('i', $userId);
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         $documents = [];
         while ($row = $result->fetch_assoc()) {
             $documents[] = $row;
         }
-        
+
         echo json_encode($documents);
         $stmt->close();
         break;
@@ -165,17 +193,20 @@ switch ($action) {
             break;
         }
 
-        $result = $conn->query("
+        $stmt = $conn->prepare("
             SELECT d.id, d.file_name, d.uploaded_at, u.id as user_id, u.name as user_name, a.name as admin_name
             FROM documents d
             JOIN users u ON d.user_id = u.id
             JOIN admins a ON d.admin_id = a.id
         ");
+        $stmt->execute();
+        $result = $stmt->get_result();
         $documents = [];
         while ($row = $result->fetch_assoc()) {
             $documents[] = $row;
         }
         echo json_encode($documents);
+        $stmt->close();
         break;
 
     // Delete a document assignment (admin only)
@@ -190,30 +221,34 @@ switch ($action) {
                 http_response_code(401);
                 break;
             }
-            if (!$docId) {
+            if (!$docId || $docId <= 0) {
                 echo json_encode(['error' => 'Invalid document ID']);
                 http_response_code(400);
                 break;
             }
 
-            // Fetch file_name before deletion for activity logging
             $stmt = $conn->prepare('SELECT file_name FROM documents WHERE id = ? AND admin_id = ?');
             $stmt->bind_param('ii', $docId, $adminId);
             $stmt->execute();
             $result = $stmt->get_result();
+
             if ($row = $result->fetch_assoc()) {
                 $fileName = $row['file_name'];
                 $stmt->close();
 
-                // Delete the document
                 $stmt = $conn->prepare('DELETE FROM documents WHERE id = ? AND admin_id = ?');
                 $stmt->bind_param('ii', $docId, $adminId);
                 if ($stmt->execute()) {
-                    // Log the deletion activity
-                    logActivity($conn, $adminId, 'Deleted', $fileName);
-                    echo json_encode(['message' => 'Document assignment deleted successfully']);
+                    if ($stmt->affected_rows > 0) {
+                        logActivity($conn, $adminId, 'Deleted', $fileName);
+                        echo json_encode(['message' => 'Document assignment deleted successfully']);
+                    } else {
+                        echo json_encode(['error' => 'No document was deleted']);
+                        http_response_code(404);
+                    }
                 } else {
-                    echo json_encode(['error' => 'Failed to delete document assignment']);
+                    error_log('Delete Error: ' . $stmt->error);
+                    echo json_encode(['error' => 'Failed to delete document: ' . $stmt->error]);
                     http_response_code(500);
                 }
                 $stmt->close();
@@ -222,6 +257,9 @@ switch ($action) {
                 http_response_code(404);
                 $stmt->close();
             }
+        } else {
+            echo json_encode(['error' => 'Invalid request method']);
+            http_response_code(405);
         }
         break;
 
@@ -235,9 +273,8 @@ switch ($action) {
             break;
         }
 
-        // Ensure the requesting user is authorized
         $sessionUserId = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
-        if (!$sessionUserId || ($sessionUserId !== $userId && !$conn->query("SELECT id FROM admins WHERE id = $sessionUserId")->num_rows)) {
+        if (!$sessionUserId) {
             echo json_encode(['error' => 'Unauthorized access']);
             http_response_code(403);
             break;
@@ -256,7 +293,7 @@ switch ($action) {
         }
         $stmt->execute();
         $result = $stmt->get_result();
-        
+
         $activities = [];
         while ($row = $result->fetch_assoc()) {
             $activities[] = [
@@ -265,7 +302,7 @@ switch ($action) {
                 'created_at' => $row['created_at']
             ];
         }
-        
+
         echo json_encode($activities);
         $stmt->close();
         break;
@@ -296,13 +333,17 @@ switch ($action) {
         $result = $stmt->get_result();
 
         if ($row = $result->fetch_assoc()) {
-            // Log the download activity
             logActivity($conn, $userId, 'Downloaded', $row['file_name']);
-            // Return file details (front-end can use file_path for download)
-            echo json_encode([
-                'file_name' => $row['file_name'],
-                'file_path' => $row['file_path']
-            ]);
+            $filePath = $row['file_path'] ?? 'Uploads/' . $row['file_name'];
+            if (file_exists($filePath)) {
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename="' . basename($filePath) . '"');
+                readfile($filePath);
+                exit;
+            } else {
+                echo json_encode(['error' => 'File not found on server']);
+                http_response_code(404);
+            }
         } else {
             echo json_encode(['error' => 'Document not found or unauthorized']);
             http_response_code(404);
