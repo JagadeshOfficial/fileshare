@@ -16,6 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `admin_password_resets`
+--
+
+DROP TABLE IF EXISTS `admin_password_resets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `admin_password_resets` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `expires` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `token` (`token`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `admin_password_resets`
+--
+
+LOCK TABLES `admin_password_resets` WRITE;
+/*!40000 ALTER TABLE `admin_password_resets` DISABLE KEYS */;
+/*!40000 ALTER TABLE `admin_password_resets` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `admins`
 --
 
@@ -42,7 +68,7 @@ CREATE TABLE `admins` (
 
 LOCK TABLES `admins` WRITE;
 /*!40000 ALTER TABLE `admins` DISABLE KEYS */;
-INSERT INTO `admins` VALUES (2,'Anu radha a','anuradha123@gmail.com','8790055638','375747770709','$2y$12$eZ1n.yC2Nf8Ksss9pkLD7u7CD/GvZ280392nV200pAcdblrcwIvEu','2025-04-25 13:25:02','Uploads/2_Screenshot__17_.png'),(3,'Jagadeswararao','jagadeswararaovana@gmail.com','8790055638','123223432345','$2y$12$3I90Bm6jrxRdxW8V24fg1eYZeIWtTghmr8cZbKrMYaBL7K.z3iXnK','2025-04-28 04:43:05','default.jpg'),(6,'Jagadeswararao','jagadeshvanaoffical@gmail.com','8790055638','123234345433','$2y$12$i.a8tjyeDpvFtbTdd.gVuei3dLoBdW54LF8Dmy52F6aLLah.1gYq6','2025-04-28 05:03:48','default.jpg');
+INSERT INTO `admins` VALUES (2,'Anu radha a','anuradha123@gmail.com','8790055638','375747770709','$2y$12$eZ1n.yC2Nf8Ksss9pkLD7u7CD/GvZ280392nV200pAcdblrcwIvEu','2025-04-25 13:25:02','Uploads/2_Signature.jpg'),(3,'Jagadeswararao','jagadeswararaovana@gmail.com','8790055638','123223432345','$2y$12$8Misgle8aHmvxuEHStDIlOTei8kemU1Ee7OKqTMjv/UIgZuDHWn1S','2025-04-28 04:43:05','Uploads/3_1746606674_JAGADESH.jpg'),(6,'Jagadeswararao','jagadeshvanaoffical@gmail.com','8790055638','123234345433','$2y$12$i.a8tjyeDpvFtbTdd.gVuei3dLoBdW54LF8Dmy52F6aLLah.1gYq6','2025-04-28 05:03:48','default.jpg');
 /*!40000 ALTER TABLE `admins` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -56,7 +82,7 @@ DROP TABLE IF EXISTS `documents`;
 CREATE TABLE `documents` (
   `id` int NOT NULL AUTO_INCREMENT,
   `file_name` varchar(255) NOT NULL,
-  `file_path` varchar(255) NOT NULL,
+  `file_path` varchar(255) DEFAULT NULL,
   `admin_id` int NOT NULL,
   `user_id` int NOT NULL,
   `uploaded_at` datetime NOT NULL,
@@ -65,7 +91,7 @@ CREATE TABLE `documents` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `documents_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`id`),
   CONSTRAINT `documents_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -74,7 +100,6 @@ CREATE TABLE `documents` (
 
 LOCK TABLES `documents` WRITE;
 /*!40000 ALTER TABLE `documents` DISABLE KEYS */;
-INSERT INTO `documents` VALUES (9,'Jagadesh-Resume.pdf','Jagadesh-Resume.pdf',3,1,'2025-04-29 10:43:56'),(11,'Jagadesh-Resume.pdf','Jagadesh-Resume.pdf',2,1,'2025-04-29 10:59:30');
 /*!40000 ALTER TABLE `documents` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -92,7 +117,7 @@ CREATE TABLE `files` (
   `file_type` varchar(100) DEFAULT NULL,
   `upload_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -101,8 +126,35 @@ CREATE TABLE `files` (
 
 LOCK TABLES `files` WRITE;
 /*!40000 ALTER TABLE `files` DISABLE KEYS */;
-INSERT INTO `files` VALUES (8,'Jagadesh_Resume.pdf',116813,'pdf','2025-04-25 15:11:05'),(9,'Anuradha_Resume.pdf',380368,'pdf','2025-04-28 04:43:21'),(10,'Jagadesh-Resume.pdf',130805,'pdf','2025-04-28 04:54:26');
+INSERT INTO `files` VALUES (12,'Prasad_Resume.pdf',49325,'pdf','2025-05-06 07:06:31'),(13,'Jagadesh-Resume.pdf',130805,'pdf','2025-05-07 06:12:38');
 /*!40000 ALTER TABLE `files` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `password_resets`
+--
+
+DROP TABLE IF EXISTS `password_resets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `password_resets` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `token` varchar(128) NOT NULL,
+  `expires` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `token` (`token`),
+  UNIQUE KEY `token_2` (`token`)
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `password_resets`
+--
+
+LOCK TABLES `password_resets` WRITE;
+/*!40000 ALTER TABLE `password_resets` DISABLE KEYS */;
+/*!40000 ALTER TABLE `password_resets` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -121,7 +173,7 @@ CREATE TABLE `user_activities` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `user_activities_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -161,7 +213,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Jagadesh Vana','jagadeswararaovana@gmail.com','8790055638','123456781234','$2y$12$laYrE07qu/IXNmq1a6FWOuXJ5ykHC9g2LlLPD1umxxUgG9BBoOnjS','2025-04-25 06:18:51','profile_6811b92389d687.77427022.png','wersdjfvdju');
+INSERT INTO `users` VALUES (1,'Jagadesh Vana','jagadeswararaovana@gmail.com','8790055638','123456781234','$2y$12$tXdk0PStIUdMUS5d2zrWL.oSdF7QHrPyMaQa7pSJPZA0qxJDdjq.G','2025-04-25 06:18:51','profile_6811b92389d687.77427022.png','wersdjfvdju');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -174,4 +226,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-02  9:26:20
+-- Dump completed on 2025-05-26 15:49:32
