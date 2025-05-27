@@ -312,12 +312,11 @@ $conn->close();
 
         .form-group input,
         .form-group textarea {
-            width: 100%;
+            width: 350px;
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-
         .btn-group button {
             padding: 10px 20px;
             background: #007bff;
@@ -330,6 +329,50 @@ $conn->close();
         .btn-group button:hover {
             background: #0056b3;
         }
+        /* Default: Sidebar visible */
+.sidebar {
+    width: 371px;
+    background-color: #2d2d2d;
+    color: white;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hide toggle button on large screens */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+}
+
+/* Responsive - for tablets and mobiles */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+    #upload {
+        width: 270px;
+    }
+    .nav {
+        display: none;
+        flex-direction: column;
+        background-color: #2d2d2d;
+    }
+
+    .nav.show {
+        display: flex;
+    }
+    .main {
+    width: 366px;
+    }
+}
+
     </style>
 </head>
 
@@ -345,8 +388,10 @@ $conn->close();
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h2>FileShare</h2>
+                <!-- Toggle Button (Visible only on mobile/tablet) -->
+                <button id="menu-toggle" class="menu-toggle">☰</button>
             </div>
-            <nav class="nav">
+            <nav class="nav" id="mobileMenu">
                 <a href="#" class="nav-link active" data-section="dashboard">Dashboard</a>
                 <a href="#" class="nav-link" data-section="documents">Documents</a>
                 <a href="#" class="nav-link" data-section="downloads">My Downloads</a>
@@ -354,6 +399,7 @@ $conn->close();
                 <a href="logout.php" class="nav-link logout">Logout</a>
             </nav>
         </aside>
+
 
         <main class="main">
             <div class="header">
@@ -471,6 +517,14 @@ $conn->close();
             </div>
         </main>
     </div>
+    <script>
+        const toggleBtn = document.getElementById('menu-toggle');
+        const navMenu = document.getElementById('mobileMenu');
+
+        toggleBtn.addEventListener('click', () => {
+            navMenu.classList.toggle('show');
+        });
+    </script>
 
 
 
