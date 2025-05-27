@@ -50,26 +50,87 @@ $conn->close();
     integrity="sha512-dO3CyN4Wb05++V+sUut8AfLP0sD6kl9IXZ9cMHkN4e6R37p78qv1F0gLfGeF9LrkMcEjh4AKlZL3ChHghfBaOg=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style></style>
+  <style>
+    /* Hide toggle on desktop */
+.menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Responsive for mobile and tablet */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding-bottom: 0;
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .menu-btn {
+    display: block;
+    margin-right: 10px;
+  }
+
+  .sidebar-menu {
+    display: none;
+    flex-direction: column;
+    background-color: #2C3E50;
+    padding: 10px 0;
+  }
+
+  .sidebar-menu.show {
+    display: flex;
+  }
+
+  .content {
+    margin-left: -15px;
+  }
+  .dashboard-overview {
+    gap: 3px;
+  }
+  .section.active {
+    display: block;
+    width: 350px;
+}
+#uploadForm {
+    width: 200px;
+}
+.upload-btn {
+    margin-left: -50px;
+}
+}
+
+  </style>
 </head>
 
 <body>
-  <div class="admin-dashboard">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <h2>FileShare</h2>
-      </div>
-      <ul class="sidebar-menu">
-        <li><a href="#" data-section="dashboard">Dashboard</a></li>
-        <li><a href="#" data-section="admins">Admins</a></li>
-        <li><a href="#" data-section="document-attach">Document Attach</a></li>
-        <li><a href="#" data-section="files">Files</a></li>
-        <li><a href="#" data-section="Profile">Profile</a></li>
-        <li><a href="index.html">Logout</a></li>
-      </ul>
+ <div class="admin-dashboard">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>FileShare</h2>
+      <button id="menu-toggle" class="menu-btn">☰</button>
     </div>
+    <ul class="sidebar-menu" id="sidebarMenu">
+      <li><a href="#" data-section="dashboard">Dashboard</a></li>
+      <li><a href="#" data-section="admins">Admins</a></li>
+      <li><a href="#" data-section="document-attach">Document Attach</a></li>
+      <li><a href="#" data-section="files">Files</a></li>
+      <li><a href="#" data-section="Profile">Profile</a></li>
+      <li><a href="index.html">Logout</a></li>
+    </ul>
   </div>
+</div>
 
   <!-- Right Content -->
   <div class="content">
@@ -290,6 +351,14 @@ $conn->close();
         </form>
       </div>
     </div>
+    <script>
+  const toggleButton = document.getElementById('menu-toggle');
+  const sidebarMenu = document.getElementById('sidebarMenu');
+
+  toggleButton.addEventListener('click', () => {
+    sidebarMenu.classList.toggle('show');
+  });
+</script>
 
     <script>
       // Edit Admin Modal Functions
